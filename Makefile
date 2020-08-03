@@ -16,7 +16,8 @@ src_deps=$(shell find pkg cmd -type f -name "*.go")
 $(OUT_DIR)/adapter: $(src_deps)
 	CGO_ENABLED=0 GOARCH=$* go build $(GOFLAGS) -o $(OUT_DIR)/$*/adapter cmd/adapter/adapter.go
 
-docker-build: verify-apis test
+# docker-build: verify-apis test
+docker-build: vendor
 	cp deploy/Dockerfile $(TEMP_DIR)/Dockerfile
 
 	docker run -v $(TEMP_DIR):/build -v $(shell pwd):/go/src/github.com/$(GITHUB_USER)/k8s-cloudwatch-adapter -e GOARCH=amd64 -e GOFLAGS="$(GOFLAGS)" -w /go/src/github.com/$(GITHUB_USER)/k8s-cloudwatch-adapter $(GOIMAGE) /bin/bash -c "\
@@ -38,9 +39,9 @@ push:
 vendor: go.mod
 ifeq ($(VENDOR_DOCKERIZED),1)
 	docker run -it -v $(shell pwd):/src/k8s-cloudwatch-adapter -w /src/k8s-cloudwatch-adapter $(GOIMAGE) /bin/bash -c "\
-		go mod vendor"
+		GOPRIVATE=github.com/bigbasket go mod vendor"
 else
-	go mod vendor
+	GOPRIVATE=github.com/bigbasket go mod vendor
 endif
 
 test:
@@ -50,8 +51,8 @@ clean:
 	rm -rf ${OUT_DIR} vendor
 
 # Code gen helpers
-gen-apis: vendor
-	hack/update-codegen.sh
+# gen-apis: vendor
+# 	hack/update-codegen.sh
 
-verify-apis: vendor
-	hack/verify-codegen.sh
+# verify-apis: vendor
+# 	hack/verify-codegen.sh

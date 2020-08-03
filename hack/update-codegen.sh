@@ -17,4 +17,4 @@ ${CODEGEN_PKG}/generate-groups.sh "all" \
     github.com/awslabs/k8s-cloudwatch-adapter/pkg/apis \
     metrics:v1alpha1 \
     --go-header-file "$(dirname ${BASH_SOURCE})/custom-boilerplate.go.txt" \
-    --output-base "$(dirname ${BASH_SOURCE})/../../../.."
+    # --output-base "$(dirname ${BASH_SOURCE})/../../../.."
