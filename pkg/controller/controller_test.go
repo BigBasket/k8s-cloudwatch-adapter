@@ -4,9 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	api "github.com/awslabs/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
-	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/clientset/versioned/fake"
-	informers "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/informers/externalversions"
+	api "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/clientset/versioned/fake"
+	informers "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/informers/externalversions"
+	"github.com/bigbasket/k8s-custom-hpa/monitoring"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -195,7 +196,8 @@ func newController(config controllerConfig) (*Controller, informers.SharedInform
 	fakeClient := fake.NewSimpleClientset(config.store...)
 	i := informers.NewSharedInformerFactory(fakeClient, 0)
 
-	c := NewController(i.Metrics().V1alpha1().ExternalMetrics(), config.handler)
+	v := monitoring.NewVisibility()
+	c := NewController(i.Metrics().V1alpha1().ExternalMetrics(), config.handler, v)
 
 	// override for testing
 	c.externalMetricSynced = config.syncedFunction
@@ -248,13 +250,13 @@ func newExternalMetric() *api.ExternalMetric {
 
 type successFakeHandler struct{}
 
-func (h successFakeHandler) Process(key namespacedQueueItem) error {
+func (h successFakeHandler) Process(key namespacedQueueItem, txn monitoring.Transaction) error {
 	return nil
 }
 
 type failedFakeHandler struct{}
 
-func (h failedFakeHandler) Process(key namespacedQueueItem) error {
+func (h failedFakeHandler) Process(key namespacedQueueItem, txn monitoring.Transaction) error {
 	return errors.New("this fake always fails")
 }
 

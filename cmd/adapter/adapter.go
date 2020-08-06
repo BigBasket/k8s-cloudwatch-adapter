@@ -9,15 +9,15 @@ import (
 	"k8s.io/component-base/logs"
 	"k8s.io/klog"
 
-	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/aws"
-	clientset "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/clientset/versioned"
-	informers "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/informers/externalversions"
-	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/controller"
-	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/metriccache"
-	cwprov "github.com/awslabs/k8s-cloudwatch-adapter/pkg/provider"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/aws"
+	clientset "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/clientset/versioned"
+	informers "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/informers/externalversions"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/controller"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/metriccache"
+	cwprov "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/provider"
+	"github.com/bigbasket/k8s-custom-hpa/monitoring"
 	basecmd "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
-	"github.com/bigbasket/k8s-custom-hpa/monitoring"
 )
 
 // CloudWatchAdapter represents a custom metrics BaseAdapter for Amazon CloudWatch
@@ -30,7 +30,7 @@ func (a *CloudWatchAdapter) makeCloudWatchClient() (aws.Client, error) {
 	return client, nil
 }
 
-func (a *CloudWatchAdapter) newController(metriccache *metriccache.MetricCache) (*controller.Controller, informers.SharedInformerFactory, visibility monitoring.Visibility) {
+func (a *CloudWatchAdapter) newController(metriccache *metriccache.MetricCache, visibility monitoring.Visibility) (*controller.Controller, informers.SharedInformerFactory) {
 	clientConfig, err := a.ClientConfig()
 	if err != nil {
 		klog.Fatalf("unable to construct client config: %v", err)
@@ -45,14 +45,12 @@ func (a *CloudWatchAdapter) newController(metriccache *metriccache.MetricCache) 
 		adapterInformerFactory.Metrics().V1alpha1().ExternalMetrics().Lister(),
 		metriccache)
 
-	
-
 	controller := controller.NewController(adapterInformerFactory.Metrics().V1alpha1().ExternalMetrics(), &handler, visibility)
 
 	return controller, adapterInformerFactory
 }
 
-func (a *CloudWatchAdapter) makeProvider(cwClient aws.Client, metriccache *metriccache.MetricCache) (provider.ExternalMetricsProvider, error, visibility monitoring.Visibility) {
+func (a *CloudWatchAdapter) makeProvider(cwClient aws.Client, metriccache *metriccache.MetricCache, visibility monitoring.Visibility) (provider.ExternalMetricsProvider, error) {
 	client, err := a.DynamicClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to construct Kubernetes client")

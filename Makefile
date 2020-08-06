@@ -6,7 +6,7 @@ VENDOR_DOCKERIZED?=0
 GIT_HASH?=$(shell git rev-parse --short HEAD)
 # VERSION:=$(or ${TRAVIS_TAG},${TRAVIS_TAG},latest)
 GOIMAGE=golang:1.14
-GOFLAGS=-mod=vendor -tags=netgo
+# GOFLAGS=-mod=vendor -tags=netgo
 
 .PHONY: all docker-build push test build-local-image
 
@@ -17,11 +17,18 @@ $(OUT_DIR)/adapter: $(src_deps)
 	CGO_ENABLED=0 GOARCH=$* go build $(GOFLAGS) -o $(OUT_DIR)/$*/adapter cmd/adapter/adapter.go
 
 # docker-build: verify-apis test
-docker-build: vendor
+# docker-build: vendor
+docker-build:
 	cp deploy/Dockerfile $(TEMP_DIR)/Dockerfile
 
-	docker run -v $(TEMP_DIR):/build -v $(shell pwd):/go/src/github.com/$(GITHUB_USER)/k8s-cloudwatch-adapter -e GOARCH=amd64 -e GOFLAGS="$(GOFLAGS)" -w /go/src/github.com/$(GITHUB_USER)/k8s-cloudwatch-adapter $(GOIMAGE) /bin/bash -c "\
-		GOPRIVATE=github.com/bigbasket CGO_ENABLED=0 GO111MODULE=on go build -o /build/adapter cmd/adapter/adapter.go"
+	# -e GOFLAGS="$(GOFLAGS)" -> check if this needs to be added
+	docker run -v $(shell pwd)/github-ssh:/root/.ssh -v $(TEMP_DIR):/build -v $(shell pwd):/build/src \
+	-e GOARCH=amd64 \
+	-w /build/src \
+	$(GOIMAGE) /bin/bash -c "\
+		chown -R root:root /root/.ssh/ && \
+		git config --global url."git@github.com:".insteadOf "https://github.com/" && \
+		GOPRIVATE=github.com/bigbasket CGO_ENABLED=0 GO111MODULE=on go build -o /build/adapter /build/src/cmd/adapter/adapter.go"
 
 	docker build -t $(REGISTRY)/$(IMAGE):$(VERSION) $(TEMP_DIR)
 	rm -rf $(TEMP_DIR)

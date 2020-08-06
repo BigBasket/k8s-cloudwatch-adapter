@@ -7,8 +7,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 
-	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/aws"
-	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/metriccache"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/aws"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/metriccache"
 	"github.com/bigbasket/k8s-custom-hpa/monitoring"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 )

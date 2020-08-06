@@ -1,11 +1,12 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
-	informers "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/informers/externalversions/metrics/v1alpha1"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
+	informers "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/informers/externalversions/metrics/v1alpha1"
 	"github.com/bigbasket/k8s-custom-hpa/monitoring"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -86,7 +87,7 @@ func (c *Controller) runWorker() {
 }
 
 func (c *Controller) processNextItem() bool {
-	txn := c.StartTransaction("controllerWorkerProcessItem")
+	txn := c.visibility.StartTransaction("controllerWorkerProcessItem")
 	defer txn.End()
 	klog.V(2).Info("processing item")
 

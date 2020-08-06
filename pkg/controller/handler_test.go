@@ -6,13 +6,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	api "github.com/awslabs/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
-	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/metriccache"
+	api "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/metriccache"
+	"github.com/bigbasket/k8s-custom-hpa/monitoring"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/clientset/versioned/fake"
-	informers "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/informers/externalversions"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/clientset/versioned/fake"
+	informers "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/informers/externalversions"
 )
 
 func getExternalKey(externalMetric *api.ExternalMetric) namespacedQueueItem {
@@ -33,7 +34,9 @@ func TestExternalMetricValueIsStored(t *testing.T) {
 	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache)
 
 	queueItem := getExternalKey(externalMetric)
-	err := handler.Process(queueItem)
+	v := monitoring.NewVisibility()
+	txn := v.StartTransaction("dummy")
+	err := handler.Process(queueItem, txn)
 
 	if err != nil {
 		t.Errorf("error after processing = %v, want %v", err, nil)
@@ -59,7 +62,9 @@ func TestShouldBeAbleToStoreCustomAndExternalWithSameNameAndNamespace(t *testing
 	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache)
 
 	externalItem := getExternalKey(externalMetric)
-	err := handler.Process(externalItem)
+	v := monitoring.NewVisibility()
+	txn := v.StartTransaction("dummy")
+	err := handler.Process(externalItem, txn)
 
 	if err != nil {
 		t.Errorf("error after processing = %v, want %v", err, nil)
@@ -88,7 +93,9 @@ func TestShouldFailOnInvalidCacheKey(t *testing.T) {
 		namespaceKey: "invalidkey/with/extrainfo",
 		kind:         "somethingwrong",
 	}
-	err := handler.Process(queueItem)
+	v := monitoring.NewVisibility()
+	txn := v.StartTransaction("dummy")
+	err := handler.Process(queueItem, txn)
 
 	if err == nil {
 		t.Errorf("error after processing nil, want non nil")
@@ -114,7 +121,9 @@ func TestWhenExternalItemHasBeenDeleted(t *testing.T) {
 	queueItem := getExternalKey(externalMetric)
 	metriccache.Update(queueItem.Key(), "test", cloudwatch.GetMetricDataInput{})
 
-	err := handler.Process(queueItem)
+	v := monitoring.NewVisibility()
+	txn := v.StartTransaction("dummy")
+	err := handler.Process(queueItem, txn)
 
 	if err != nil {
 		t.Errorf("error == %v, want nil", err)
@@ -140,7 +149,9 @@ func TestWhenItemKindIsUnknown(t *testing.T) {
 		kind:         "Unknown",
 	}
 
-	err := handler.Process(queueItem)
+	v := monitoring.NewVisibility()
+	txn := v.StartTransaction("dummy")
+	err := handler.Process(queueItem, txn)
 
 	if err != nil {
 		t.Errorf("error == %v, want nil", err)
