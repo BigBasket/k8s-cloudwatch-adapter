@@ -28,7 +28,7 @@ docker-build:
 	$(GOIMAGE) /bin/bash -c "\
 		chown -R root:root /root/.ssh/ && \
 		git config --global url."git@github.com:".insteadOf "https://github.com/" && \
-		GOPRIVATE=github.com/bigbasket CGO_ENABLED=0 GO111MODULE=on go build -o /build/adapter /build/src/cmd/adapter/adapter.go"
+		GOPRIVATE=github.com/bigbasket CGO_ENABLED=0 GO111MODULE=on go build -mod=readonly -o /build/adapter /build/src/cmd/adapter/adapter.go"
 
 	docker build -t $(REGISTRY)/$(IMAGE):$(VERSION) $(TEMP_DIR)
 	rm -rf $(TEMP_DIR)
