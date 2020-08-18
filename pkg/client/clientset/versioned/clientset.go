@@ -18,7 +18,7 @@ package versioned
 import (
 	"fmt"
 
-	metricsv1alpha1 "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/clientset/versioned/typed/metrics/v1alpha1"
+	metricsv1alpha1 "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/clientset/versioned/typed/metrics/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

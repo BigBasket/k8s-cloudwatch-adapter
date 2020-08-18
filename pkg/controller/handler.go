@@ -5,9 +5,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	listers "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/listers/metrics/v1alpha1"
-	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/metriccache"
-	"github.com/bigbasket/k8s-cloudwatch-adapter/monitoring"
+	"github.com/awslabs/k8s-cloudwatch-adapter/monitoring"
+	listers "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/listers/metrics/v1alpha1"
+	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/metriccache"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
