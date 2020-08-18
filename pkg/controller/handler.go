@@ -7,8 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	listers "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/listers/metrics/v1alpha1"
 	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/metriccache"
-
-	"github.com/bigbasket/k8s-custom-hpa/monitoring"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/monitoring"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"

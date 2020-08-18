@@ -16,7 +16,9 @@
 package fake
 
 import (
-	v1alpha1 "github.com/awslabs/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
+	"context"
+
+	v1alpha1 "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -35,7 +37,7 @@ var externalmetricsResource = schema.GroupVersionResource{Group: "metrics.aws", 
 var externalmetricsKind = schema.GroupVersionKind{Group: "metrics.aws", Version: "v1alpha1", Kind: "ExternalMetric"}
 
 // Get takes name of the externalMetric, and returns the corresponding externalMetric object, and an error if there is any.
-func (c *FakeExternalMetrics) Get(name string, options v1.GetOptions) (result *v1alpha1.ExternalMetric, err error) {
+func (c *FakeExternalMetrics) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ExternalMetric, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(externalmetricsResource, c.ns, name), &v1alpha1.ExternalMetric{})
 
@@ -46,7 +48,7 @@ func (c *FakeExternalMetrics) Get(name string, options v1.GetOptions) (result *v
 }
 
 // List takes label and field selectors, and returns the list of ExternalMetrics that match those selectors.
-func (c *FakeExternalMetrics) List(opts v1.ListOptions) (result *v1alpha1.ExternalMetricList, err error) {
+func (c *FakeExternalMetrics) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ExternalMetricList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(externalmetricsResource, externalmetricsKind, c.ns, opts), &v1alpha1.ExternalMetricList{})
 
@@ -68,14 +70,14 @@ func (c *FakeExternalMetrics) List(opts v1.ListOptions) (result *v1alpha1.Extern
 }
 
 // Watch returns a watch.Interface that watches the requested externalMetrics.
-func (c *FakeExternalMetrics) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeExternalMetrics) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(externalmetricsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a externalMetric and creates it.  Returns the server's representation of the externalMetric, and an error, if there is any.
-func (c *FakeExternalMetrics) Create(externalMetric *v1alpha1.ExternalMetric) (result *v1alpha1.ExternalMetric, err error) {
+func (c *FakeExternalMetrics) Create(ctx context.Context, externalMetric *v1alpha1.ExternalMetric, opts v1.CreateOptions) (result *v1alpha1.ExternalMetric, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(externalmetricsResource, c.ns, externalMetric), &v1alpha1.ExternalMetric{})
 
@@ -86,7 +88,7 @@ func (c *FakeExternalMetrics) Create(externalMetric *v1alpha1.ExternalMetric) (r
 }
 
 // Update takes the representation of a externalMetric and updates it. Returns the server's representation of the externalMetric, and an error, if there is any.
-func (c *FakeExternalMetrics) Update(externalMetric *v1alpha1.ExternalMetric) (result *v1alpha1.ExternalMetric, err error) {
+func (c *FakeExternalMetrics) Update(ctx context.Context, externalMetric *v1alpha1.ExternalMetric, opts v1.UpdateOptions) (result *v1alpha1.ExternalMetric, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(externalmetricsResource, c.ns, externalMetric), &v1alpha1.ExternalMetric{})
 
@@ -97,7 +99,7 @@ func (c *FakeExternalMetrics) Update(externalMetric *v1alpha1.ExternalMetric) (r
 }
 
 // Delete takes name of the externalMetric and deletes it. Returns an error if one occurs.
-func (c *FakeExternalMetrics) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeExternalMetrics) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(externalmetricsResource, c.ns, name), &v1alpha1.ExternalMetric{})
 
@@ -105,8 +107,8 @@ func (c *FakeExternalMetrics) Delete(name string, options *v1.DeleteOptions) err
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeExternalMetrics) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(externalmetricsResource, c.ns, listOptions)
+func (c *FakeExternalMetrics) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(externalmetricsResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.ExternalMetricList{})
 	return err

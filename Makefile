@@ -4,9 +4,9 @@ TEMP_DIR:=$(shell mktemp -d /tmp/$(IMAGE).XXXXXX)
 OUT_DIR?=./_output
 VENDOR_DOCKERIZED?=0
 GIT_HASH?=$(shell git rev-parse --short HEAD)
-# VERSION:=$(or ${TRAVIS_TAG},${TRAVIS_TAG},latest)
+# VERSION:=$(or ${IMAGE_VERSION},${IMAGE_VERSION},latest)
 GOIMAGE=golang:1.14
-# GOFLAGS=-mod=vendor -tags=netgo
+GOFLAGS=-mod=vendor -tags=netgo
 
 .PHONY: all docker-build push test build-local-image
 
@@ -16,19 +16,11 @@ src_deps=$(shell find pkg cmd -type f -name "*.go")
 $(OUT_DIR)/adapter: $(src_deps)
 	CGO_ENABLED=0 GOARCH=$* go build $(GOFLAGS) -o $(OUT_DIR)/$*/adapter cmd/adapter/adapter.go
 
-# docker-build: verify-apis test
-# docker-build: vendor
-docker-build:
+docker-build: verify-apis test
 	cp deploy/Dockerfile $(TEMP_DIR)/Dockerfile
 
-	# -e GOFLAGS="$(GOFLAGS)" -> check if this needs to be added
-	docker run -v $(shell pwd)/github-ssh:/root/.ssh -v $(TEMP_DIR):/build -v $(shell pwd):/build/src \
-	-e GOARCH=amd64 \
-	-w /build/src \
-	$(GOIMAGE) /bin/bash -c "\
-		chown -R root:root /root/.ssh/ && \
-		git config --global url."git@github.com:".insteadOf "https://github.com/" && \
-		GOPRIVATE=github.com/bigbasket CGO_ENABLED=0 GO111MODULE=on go build -mod=readonly -o /build/adapter /build/src/cmd/adapter/adapter.go"
+	docker run -v $(TEMP_DIR):/build -v $(shell pwd):/go/src/github.com/bigbasket/k8s-cloudwatch-adapter -e GOARCH=amd64 -e GOFLAGS="$(GOFLAGS)" -w /go/src/github.com/bigbasket/k8s-cloudwatch-adapter $(GOIMAGE) /bin/bash -c "\
+		CGO_ENABLED=0 GO111MODULE=on go build -o /build/adapter cmd/adapter/adapter.go"
 
 	docker build -t $(REGISTRY)/$(IMAGE):$(VERSION) $(TEMP_DIR)
 	rm -rf $(TEMP_DIR)
@@ -46,9 +38,9 @@ push:
 vendor: go.mod
 ifeq ($(VENDOR_DOCKERIZED),1)
 	docker run -it -v $(shell pwd):/src/k8s-cloudwatch-adapter -w /src/k8s-cloudwatch-adapter $(GOIMAGE) /bin/bash -c "\
-		GOPRIVATE=github.com/bigbasket go mod vendor"
+		go mod vendor"
 else
-	GOPRIVATE=github.com/bigbasket go mod vendor
+	go mod vendor
 endif
 
 test:
@@ -58,8 +50,8 @@ clean:
 	rm -rf ${OUT_DIR} vendor
 
 # Code gen helpers
-# gen-apis: vendor
-# 	hack/update-codegen.sh
+gen-apis: vendor
+	hack/update-codegen.sh
 
-# verify-apis: vendor
-# 	hack/verify-codegen.sh
+verify-apis: vendor
+	hack/verify-codegen.sh

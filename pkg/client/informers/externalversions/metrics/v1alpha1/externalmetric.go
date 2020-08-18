@@ -16,12 +16,13 @@
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
-	metricsv1alpha1 "github.com/awslabs/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
-	versioned "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/clientset/versioned"
-	internalinterfaces "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/listers/metrics/v1alpha1"
+	metricsv1alpha1 "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
+	versioned "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/listers/metrics/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -58,13 +59,13 @@ func NewFilteredExternalMetricInformer(client versioned.Interface, namespace str
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.MetricsV1alpha1().ExternalMetrics(namespace).List(options)
+				return client.MetricsV1alpha1().ExternalMetrics(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.MetricsV1alpha1().ExternalMetrics(namespace).Watch(options)
+				return client.MetricsV1alpha1().ExternalMetrics(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&metricsv1alpha1.ExternalMetric{},

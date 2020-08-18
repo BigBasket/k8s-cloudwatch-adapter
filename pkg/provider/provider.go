@@ -9,7 +9,7 @@ import (
 
 	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/aws"
 	"github.com/bigbasket/k8s-cloudwatch-adapter/pkg/metriccache"
-	"github.com/bigbasket/k8s-custom-hpa/monitoring"
+	"github.com/bigbasket/k8s-cloudwatch-adapter/monitoring"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 )
 

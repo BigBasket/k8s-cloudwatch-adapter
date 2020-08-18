@@ -16,10 +16,11 @@
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
-	v1alpha1 "github.com/awslabs/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
-	scheme "github.com/awslabs/k8s-cloudwatch-adapter/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
+	scheme "github.com/bigbasket/k8s-cloudwatch-adapter/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
@@ -33,13 +34,13 @@ type ExternalMetricsGetter interface {
 
 // ExternalMetricInterface has methods to work with ExternalMetric resources.
 type ExternalMetricInterface interface {
-	Create(*v1alpha1.ExternalMetric) (*v1alpha1.ExternalMetric, error)
-	Update(*v1alpha1.ExternalMetric) (*v1alpha1.ExternalMetric, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.ExternalMetric, error)
-	List(opts v1.ListOptions) (*v1alpha1.ExternalMetricList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
+	Create(ctx context.Context, externalMetric *v1alpha1.ExternalMetric, opts v1.CreateOptions) (*v1alpha1.ExternalMetric, error)
+	Update(ctx context.Context, externalMetric *v1alpha1.ExternalMetric, opts v1.UpdateOptions) (*v1alpha1.ExternalMetric, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.ExternalMetric, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.ExternalMetricList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	ExternalMetricExpansion
 }
 
@@ -58,20 +59,20 @@ func newExternalMetrics(c *MetricsV1alpha1Client, namespace string) *externalMet
 }
 
 // Get takes name of the externalMetric, and returns the corresponding externalMetric object, and an error if there is any.
-func (c *externalMetrics) Get(name string, options v1.GetOptions) (result *v1alpha1.ExternalMetric, err error) {
+func (c *externalMetrics) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ExternalMetric, err error) {
 	result = &v1alpha1.ExternalMetric{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("externalmetrics").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of ExternalMetrics that match those selectors.
-func (c *externalMetrics) List(opts v1.ListOptions) (result *v1alpha1.ExternalMetricList, err error) {
+func (c *externalMetrics) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ExternalMetricList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -82,13 +83,13 @@ func (c *externalMetrics) List(opts v1.ListOptions) (result *v1alpha1.ExternalMe
 		Resource("externalmetrics").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested externalMetrics.
-func (c *externalMetrics) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *externalMetrics) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -99,57 +100,59 @@ func (c *externalMetrics) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("externalmetrics").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a externalMetric and creates it.  Returns the server's representation of the externalMetric, and an error, if there is any.
-func (c *externalMetrics) Create(externalMetric *v1alpha1.ExternalMetric) (result *v1alpha1.ExternalMetric, err error) {
+func (c *externalMetrics) Create(ctx context.Context, externalMetric *v1alpha1.ExternalMetric, opts v1.CreateOptions) (result *v1alpha1.ExternalMetric, err error) {
 	result = &v1alpha1.ExternalMetric{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("externalmetrics").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(externalMetric).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a externalMetric and updates it. Returns the server's representation of the externalMetric, and an error, if there is any.
-func (c *externalMetrics) Update(externalMetric *v1alpha1.ExternalMetric) (result *v1alpha1.ExternalMetric, err error) {
+func (c *externalMetrics) Update(ctx context.Context, externalMetric *v1alpha1.ExternalMetric, opts v1.UpdateOptions) (result *v1alpha1.ExternalMetric, err error) {
 	result = &v1alpha1.ExternalMetric{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("externalmetrics").
 		Name(externalMetric.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(externalMetric).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the externalMetric and deletes it. Returns an error if one occurs.
-func (c *externalMetrics) Delete(name string, options *v1.DeleteOptions) error {
+func (c *externalMetrics) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("externalmetrics").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *externalMetrics) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *externalMetrics) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("externalmetrics").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
